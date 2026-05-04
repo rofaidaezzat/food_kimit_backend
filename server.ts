@@ -1,8 +1,10 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import express from "express";
-import cors from "cors"; import authRoutes from "./src/routes/auth";
+import cors from "cors";
+import authRoutes from "./src/routes/auth";
 import orderRoutes from "./src/routes/order";
+import productRoutes from "./src/routes/product";
 import UserService from "./src/services/UserServices";
 
 const app = express();
@@ -15,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/products", productRoutes);
 
 // Database Connection
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/fayroz_db";
