@@ -25,7 +25,7 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/fayroz_db"
 if (process.env.NODE_ENV === "production" && MONGO_URI.includes("localhost")) {
     console.warn("⚠️  WARNING: Running in production but connecting to localhost.");
 }
-console.log("Attempting to connect to MongoDB...");
+/*console.log("Attempting to connect to MongoDB...");
 mongoose
     .connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
     .then(async () => {
@@ -48,7 +48,59 @@ mongoose
             console.error("5. Click Confirm and wait 2 minutes.");
             console.error("=========================================");
         }
+    });*/
+
+const startServer = async () => {
+  try {
+    console.log("Attempting to connect to MongoDB...");
+
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 5000,
     });
+
+    console.log(
+      `✅ MongoDB connected to ${
+        MONGO_URI.includes("localhost") ? "Localhost" : "Remote Cluster"
+      }`
+    );
+
+    // Seed admin AFTER connection
+    const userService = new UserService();
+    await userService.seedAdmin();
+
+    // Optional: listen to runtime DB errors
+    mongoose.connection.on("error", (err) => {
+      console.error("MongoDB runtime error:", err);
+    });
+
+    // ✅ Start server ONLY after DB is ready
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (err: any) {
+    console.error("❌ MongoDB connection error:");
+    console.error(err.message);
+
+    if (err.message.includes("IP that isn't whitelisted")) {
+      console.error("=========================================");
+      console.error("🛑 MONGODB ATLAS IP SECURITY BLOCK 🛑");
+      console.error(
+        "Your computer's IP address is not allowed by MongoDB Atlas."
+      );
+      console.error("1. Go to https://cloud.mongodb.com/");
+      console.error("2. Go to Security -> Network Access");
+      console.error("3. Click '+ Add IP Address'");
+      console.error("4. Choose 'Allow Access from Anywhere' (0.0.0.0/0)");
+      console.error("5. Click Confirm and wait 2 minutes.");
+      console.error("=========================================");
+    }
+
+    // ❌ Stop app if DB fails
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Global Error Handler to catch multer/cloudinary errors as JSON
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
