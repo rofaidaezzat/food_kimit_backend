@@ -1,5 +1,6 @@
 import { Router } from "express";
 import ProductController from "../controller/productController";
+import { upload } from "../config/cloudinary";
 
 const productRouter = Router();
 const controller = new ProductController();
@@ -11,10 +12,10 @@ productRouter.get("/", controller.getAll);
 productRouter.get("/:id", controller.getById);
 
 // POST   /api/v1/products
-productRouter.post("/", controller.create);
+productRouter.post("/", upload.single("image"), controller.create);
 
 // PUT    /api/v1/products/:id
-productRouter.put("/:id", controller.update);
+productRouter.put("/:id", upload.single("image"), controller.update);
 
 // DELETE /api/v1/products/:id
 productRouter.delete("/:id", controller.delete);

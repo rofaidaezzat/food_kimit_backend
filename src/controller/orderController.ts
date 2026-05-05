@@ -37,7 +37,8 @@ class OrderController {
     // POST /api/v1/orders
     create = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { customer, phone, city, address, items, total, date } = req.body;
+            const body = req.body || {};
+            const { customer, phone, city, address, items, total, date } = body;
 
             if (!customer || !phone || !city || !address || !items || total === undefined || !date) {
                 res.status(400).json({
@@ -49,16 +50,17 @@ class OrderController {
             const data: IOrderData = { customer, phone, city, address, items, total, date };
             const order = await this.orderService.create(data);
             res.status(201).json({ success: true, data: order });
-        } catch (error) {
-            console.error("create error:", error);
-            res.status(500).json({ error: "Internal Server Error" });
+        } catch (error: any) {
+            console.error("create error FULL:", error);
+            res.status(500).json({ error: "Internal Server Error", detail: error?.message || String(error) });
         }
     };
 
     // PUT /api/v1/orders/:id
     update = async (req: Request, res: Response): Promise<void> => {
         try {
-            const order = await this.orderService.update(req.params.id as string, req.body);
+            const body = req.body || {};
+            const order = await this.orderService.update(req.params.id as string, body);
             if (!order) {
                 res.status(404).json({ error: "Order not found" });
                 return;

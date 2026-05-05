@@ -37,7 +37,9 @@ class ProductController {
     // POST /api/v1/products
     create = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { name, description, price, image } = req.body;
+            const body = req.body || {};
+            const { name, description, price } = body;
+            const image = req.file?.path; // Get Cloudinary URL from multer
 
             if (!name || !description || price === undefined || !image) {
                 res.status(400).json({
@@ -46,7 +48,12 @@ class ProductController {
                 return;
             }
 
-            const data: IProductData = { name, description, price, image };
+            const data: IProductData = { 
+                name, 
+                description, 
+                price: Number(price), 
+                image 
+            };
             const product = await this.productService.create(data);
             res.status(201).json({ success: true, data: product });
         } catch (error) {
@@ -58,12 +65,14 @@ class ProductController {
     // PUT /api/v1/products/:id
     update = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { name, description, price, image } = req.body;
+            const body = req.body || {};
+            const { name, description, price } = body;
+            const image = req.file?.path; // Get Cloudinary URL from multer if new image uploaded
             const data: Partial<IProductData> = {};
 
             if (name !== undefined) data.name = name;
             if (description !== undefined) data.description = description;
-            if (price !== undefined) data.price = price;
+            if (price !== undefined) data.price = Number(price);
             if (image !== undefined) data.image = image;
 
 
