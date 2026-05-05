@@ -43,9 +43,9 @@ class UserController {
                 token,
                 user: { id: user._id, email: user.email, role: user.role },
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Login error:", error);
-            res.status(500).json({ error: "Internal Server Error" });
+            res.status(500).json({ error: "Internal Server Error", detail: error?.message || String(error) });
         }
     };
 }
